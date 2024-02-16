@@ -1,0 +1,131 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                                     Equinox Fenix |
+//|                                 Copyright © 2022, Forex Robot Easy Team |
+//|                                          https://www.forexroboteasy.com |
+//+------------------------------------------------------------------+
+
+// External input parameters
+input string PreferredPairs = 'EURUSD,GBPUSD,AUDUSD,USDCAD,EURGBP,USDCHF,AUDCAD,EURAUD';
+input double RiskPercentage = 1.0; // Risk percentage per trade
+input double TakeProfitPercentage = 2.0; // Take profit percentage
+input double StopLossPercentage = 1.0; // Stop loss percentage
+
+// Global variables
+int ticket = -1; // Order ticket
+bool isTradeOpen = false; // Flag to check if a trade is open
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Add initialization code here
+
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+    // Add deinitialization code here
+}
+
+//+------------------------------------------------------------------+
+//| Expert start function                                            |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+    // Check if a trade is already open
+    if(isTradeOpen)
+    {
+        // Manage open trades
+        ManageTrades();
+        return;
+    }
+
+    // Analyze market conditions and identify potential trade opportunities
+    if(AnalyzeMarketConditions())
+    {
+        // Enter trades based on the identified opportunities
+        EnterTrade();
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Function to analyze market conditions and identify trade         |
+//| opportunities                                                    |
+//+------------------------------------------------------------------+
+bool AnalyzeMarketConditions()
+{
+    // Add code to analyze market conditions here
+
+    // Return true if trade opportunity is identified, false otherwise
+    return false;
+}
+
+//+------------------------------------------------------------------+
+//| Function to enter trades based on identified opportunities       |
+//+------------------------------------------------------------------+
+void EnterTrade()
+{
+    // Add code to enter trades here
+
+    // Set stop-loss and take-profit levels
+    double stopLossLevel = Ask - StopLossPercentage * Point;
+    double takeProfitLevel = Bid + TakeProfitPercentage * Point;
+
+    // Place market order
+    ticket = OrderSend(Symbol(), OP_BUY, 0.01, Ask, 1, stopLossLevel, takeProfitLevel, 'Equinox Fenix', MagicNumber);
+    if(ticket > 0)
+    {
+        isTradeOpen = true; // Update trade status
+        Print('Trade opened successfully. Ticket: ', ticket);
+    }
+    else
+    {
+        Print('Failed to open trade. Error code: ', GetLastError());
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Function to manage open trades                                    |
+//+------------------------------------------------------------------+
+void ManageTrades()
+{
+    // Add code to manage open trades here
+
+    // Check if the predetermined profit or loss targets are reached
+    if(TradeProfit() >= TakeProfitPercentage * Point || TradeProfit() <= -StopLossPercentage * Point)
+    {
+        CloseTrade(); // Close trade if targets are reached
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Function to close the open trade                                  |
+//+------------------------------------------------------------------+
+void CloseTrade()
+{
+    // Close open trade
+    bool result = OrderClose(ticket, OrderLots(), Bid, 1);
+    if(result)
+    {
+        isTradeOpen = false; // Update trade status
+        Print('Trade closed successfully. Ticket: ', ticket);
+    }
+    else
+    {
+        Print('Failed to close trade. Error code: ', GetLastError());
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Function to calculate the current trade profit/loss              |
+//+------------------------------------------------------------------+
+double TradeProfit()
+{
+    return OrderProfit() + OrderSwap() + OrderCommission(); // Calculate trade profit/loss
+}
